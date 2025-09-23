@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
@@ -159,44 +158,79 @@ class TaskCard extends StatelessWidget {
             BoxShadow(color: gradient.first.withValues(alpha: .35), blurRadius: 18, offset: const Offset(0, 10)),
           ],
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(
+        child: Stack(children: [
+          // Content column
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Title with space for progress circle on right via padding
+            Padding(
+              padding: const EdgeInsets.only(right: 70),
               child: Text(task.title,
                   style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
             ),
-            TagChip(label: task.priority == 'basic' ? 'Basic' : 'Important', priority: task.priority),
-          ]),
-          const SizedBox(height: 8),
-            Text(
-              task.description,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withValues(alpha: .9)),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          const SizedBox(height: 18),
-          Row(children: [
+            const SizedBox(height: 8),
+            if (task.description.isNotEmpty)
+              Text(
+                task.description,
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withValues(alpha: .9)),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            const SizedBox(height: 14),
             Text('There are ${task.subTasks.where((t)=>!t.isCompleted).length} unfinished tasks',
                 style: GoogleFonts.poppins(fontSize: 10, color: Colors.white.withValues(alpha: .85))),
-            const Spacer(),
-            CircularPercentIndicator(
-              radius: 20,
-              lineWidth: 3,
+            const SizedBox(height: 26),
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  TagChip(label: task.priority == 'basic' ? 'Basic' : 'Important', priority: task.priority),
+                  const SizedBox(width: 10),
+                  _DateChip(date: task.dueDate),
+                ]),
+                const SizedBox(height: 12),
+                // AvatarGroup moved to bottom-right via Positioned; leave space here for vertical rhythm
+              ]),
+            ])
+          ]),
+          // Progress circle positioned top-right
+          Positioned(
+            top: 4,
+            right: 0,
+            child: CircularPercentIndicator(
+              radius: 24,
+              lineWidth: 4,
               percent: task.progress,
+              reverse: true,
               center: Text('${(task.progress * 100).round()}%', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
               progressColor: Colors.white,
-              backgroundColor: Colors.white.withValues(alpha: .3),
+              backgroundColor: Colors.white.withValues(alpha: .25),
             ),
-          ]),
-          const SizedBox(height: 12),
-          Row(children: [
-            Text(DateFormat('d MMM yyyy').format(task.dueDate),
-                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white)),
-            const Spacer(),
-            AvatarGroup(members: task.teamMembers, size: 28),
-          ])
+          ),
+          // Avatars positioned bottom-right
+          Positioned(
+            right: 0,
+            bottom: 4,
+            child: AvatarGroup(members: task.teamMembers, size: 28),
+          ),
         ]),
       ),
+    );
+  }
+}
+
+class _DateChip extends StatelessWidget {
+  final DateTime date;
+  const _DateChip({required this.date});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: .35), width: 1),
+      ),
+      child: Text(DateFormat('d MMM yyyy').format(date),
+          style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),
     );
   }
 }
@@ -210,6 +244,7 @@ class ProgressCircle extends StatelessWidget {
       radius: 25,
       lineWidth: 4,
       percent: progress,
+      reverse: true,
       center: Text('${(progress * 100).round()}%', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       progressColor: AppColors.purpleStart,
       backgroundColor: Colors.grey[200]!,
@@ -217,50 +252,3 @@ class ProgressCircle extends StatelessWidget {
   }
 }
 
-class DecorativeBackground extends StatelessWidget {
-  final Widget child;
-  const DecorativeBackground({super.key, required this.child});
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-      Positioned.fill(
-        child: CustomPaint(painter: _ScribblePainter()),
-      ),
-      child,
-    ]);
-  }
-}
-
-class _ScribblePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..color = AppColors.purpleStart.withValues(alpha: .12);
-    final path = Path();
-    final amplitude = 22.0;
-    final cycles = 3;
-    final startX = size.width * .65;
-    final startY = 40.0;
-    path.moveTo(startX, startY);
-    for (int i = 0; i < cycles * 2; i++) {
-      final x = startX + i * 26;
-      final y = startY + (i.isEven ? -amplitude : amplitude);
-      path.lineTo(x, y);
-    }
-    canvas.drawPath(path, paint);
-
-    final randomSpots = Paint()
-      ..style = PaintingStyle.fill
-      ..color = AppColors.purpleEnd.withValues(alpha: .15);
-    for (int i = 0; i < 8; i++) {
-      final dx = startX - 60 + i * 18;
-      final dy = startY + math.sin(i.toDouble()) * 30 + 180;
-      canvas.drawCircle(Offset(dx, dy), 6, randomSpots);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

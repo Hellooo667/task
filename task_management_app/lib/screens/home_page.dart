@@ -12,27 +12,24 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tasks = demoTasks();
-    return DecorativeBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.screenHPad, vertical: Spacing.screenVPad),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.screenHPad, vertical: Spacing.screenVPad),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 _profileAvatar(),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Hello, Jane', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('You have 6 tasks to complete', style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary)),
-                  ]),
-                ),
-                Row(children: [
-                  _circleButton(icon: Icons.add, bg: AppColors.tagImportant),
-                ])
+                const Spacer(),
+                _circleButton(icon: Icons.add, bg: AppColors.tagImportant),
+                const SizedBox(width: 14),
+                _notificationButton(count: 8),
               ]),
-              const SizedBox(height: Spacing.sectionGapMd + 4),
+              const SizedBox(height: 20),
+              Text('Hello, Jane', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              const SizedBox(height: 6),
+              Text('You have 6 tasks to complete', style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary)),
+              const SizedBox(height: Spacing.sectionGapMd + 12),
               Row(children: [
                 Expanded(child: StatCard(title: 'Task Today', value: '8', subtitle: 'Tasks', iconColor: AppColors.purpleStart)),
                 const SizedBox(width: 18),
@@ -53,8 +50,7 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
-            ]),
-          ),
+          ]),
         ),
       ),
     );
@@ -81,6 +77,46 @@ class HomePage extends StatelessWidget {
         BoxShadow(color: bg.withValues(alpha: .4), blurRadius: 16, offset: const Offset(0, 8)),
       ]),
       child: Icon(icon, color: Colors.white, size: 26),
+    );
+  }
+
+  Widget _notificationButton({required int count}) {
+    const bg = AppColors.white;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: .05), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 26),
+        ),
+        Positioned(
+          top: -2,
+          right: -2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.tagImportant,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: AppColors.tagImportant.withValues(alpha: .5), blurRadius: 10, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: Text(
+              '$count',
+              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+            ),
+          ),
+        )
+      ],
     );
   }
 

@@ -12,8 +12,7 @@ class TaskDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecorativeBackground(
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.pop(context)),
@@ -77,7 +76,10 @@ class TaskDetailPage extends StatelessWidget {
                       Container(
                         width: 22,
                         height: 22,
-                        decoration: BoxDecoration(color: s.isCompleted ? Colors.green : Colors.grey[300], shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: s.isCompleted ? Colors.black : Colors.grey[300],
+                          shape: BoxShape.circle,
+                        ),
                         child: s.isCompleted ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
                       ),
                       const SizedBox(width: 14),
@@ -87,7 +89,6 @@ class TaskDetailPage extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: AppColors.textPrimary,
-                              decoration: s.isCompleted ? TextDecoration.lineThrough : null,
                             )),
                       ),
                       const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
@@ -99,8 +100,7 @@ class TaskDetailPage extends StatelessWidget {
             const SliverToBoxAdapter(child: SizedBox(height: 40)),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _createdBy() {
@@ -131,24 +131,32 @@ class TaskDetailPage extends StatelessWidget {
   }
 
   Widget _teamRow() {
+    const overlap = 34.0; // horizontal shift
+    const size = 46.0;
     return SizedBox(
-      height: 48,
-      child: Row(children: [
-        Expanded(
-          child: Stack(children: [
-            for (int i = 0; i < task.teamMembers.length; i++)
-              Positioned(
-                left: i * 34,
-                child: _circleImage(task.teamMembers[i], 46),
-              )
-          ]),
+      height: size,
+      child: Stack(children: [
+        for (int i = 0; i < task.teamMembers.length; i++)
+          Positioned(
+            left: i * overlap,
+            child: _circleImage(task.teamMembers[i], size),
+          ),
+        Positioned(
+          left: task.teamMembers.length * overlap,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey[300]!, width: 2),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: .06), blurRadius: 6, offset: const Offset(0, 3)),
+              ],
+            ),
+            child: const Icon(Icons.add, size: 22, color: Colors.black),
+          ),
         ),
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey[300]!, width: 2)),
-          child: const Icon(Icons.add, size: 22, color: Colors.grey),
-        )
       ]),
     );
   }
