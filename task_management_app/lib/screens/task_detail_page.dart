@@ -6,9 +6,28 @@ import '../widgets/ui_components.dart';
 import 'package:intl/intl.dart';
 import '../theme/design_tokens.dart';
 
-class TaskDetailPage extends StatelessWidget {
+class TaskDetailPage extends StatefulWidget {
   final TaskItem task;
   const TaskDetailPage({super.key, required this.task});
+
+  @override
+  State<TaskDetailPage> createState() => _TaskDetailPageState();
+}
+
+class _TaskDetailPageState extends State<TaskDetailPage> {
+  TaskItem get task => widget.task;
+
+  @override
+  void initState() {
+    super.initState();
+    // If this is the 'Illustration for Caraso Company' entry, immediately close the screen.
+    // We rely on demo id '2' for this item.
+    if (task.id == '2') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +100,7 @@ class TaskDetailPage extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final s = task.subTasks[index];
+                  final bool isBlackCheckTask = task.id == '1' || task.title == '3D Character Cute Robot';
                   return Container(
                     margin: EdgeInsets.only(bottom: Spacing.sectionGapSm - 2),
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -96,11 +116,18 @@ class TaskDetailPage extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: s.isCompleted ? Colors.white : Colors.grey[300],
+                          color: s.isCompleted
+                              ? (isBlackCheckTask ? Colors.black : Colors.black)
+                              : Colors.grey[300],
                           shape: BoxShape.circle,
-                          border: s.isCompleted ? Border.all(color: Colors.black, width: 2) : null,
                         ),
-                        child: s.isCompleted ? const Icon(Icons.check, size: 14, color: Colors.black) : null,
+                        child: s.isCompleted
+                            ? Icon(
+                                Icons.check,
+                                size: 14,
+                                color: isBlackCheckTask ? Colors.white : Colors.white,
+                              )
+                            : null,
                       ),
                       const SizedBox(width: 14),
                       Expanded(
