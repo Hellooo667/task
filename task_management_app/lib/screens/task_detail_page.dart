@@ -17,12 +17,28 @@ class TaskDetailPage extends StatelessWidget {
         appBar: AppBar(
           leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.pop(context)),
           actions: [
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.edit, size: 16),
-              label: Text('Edit Task', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () {},
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Row(children: [
+                    const _PencilWithLine(),
+                    const SizedBox(width: 8),
+                    Text('Edit Task', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+                  ]),
+                ),
+              ),
             ),
-            const SizedBox(width: 8),
           ],
         ),
         body: CustomScrollView(
@@ -31,7 +47,10 @@ class TaskDetailPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: Spacing.screenHPad, vertical: 8),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  TagChip(label: 'Important', priority: task.priority),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TagChip(label: 'Important', priority: task.priority),
+                  ),
                   const SizedBox(height: Spacing.sectionGapSm),
                   Text(task.title, style: AppTextStyles.h1),
                   const SizedBox(height: Spacing.sectionGapMd),
@@ -77,10 +96,11 @@ class TaskDetailPage extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: s.isCompleted ? Colors.black : Colors.grey[300],
+                          color: s.isCompleted ? Colors.white : Colors.grey[300],
                           shape: BoxShape.circle,
+                          border: s.isCompleted ? Border.all(color: Colors.black, width: 2) : null,
                         ),
-                        child: s.isCompleted ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                        child: s.isCompleted ? const Icon(Icons.check, size: 14, color: Colors.black) : null,
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -148,13 +168,12 @@ class TaskDetailPage extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey[300]!, width: 2),
-              color: Colors.white,
+              color: Colors.black,
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: .06), blurRadius: 6, offset: const Offset(0, 3)),
+                BoxShadow(color: Colors.black.withValues(alpha: .12), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
-            child: const Icon(Icons.add, size: 22, color: Colors.black),
+            child: const Icon(Icons.add, size: 22, color: Colors.white),
           ),
         ),
       ]),
@@ -181,6 +200,26 @@ class TaskDetailPage extends StatelessWidget {
             child: Icon(Icons.person, size: size * .55, color: AppColors.purpleStart.withValues(alpha: .6)),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PencilWithLine extends StatelessWidget {
+  const _PencilWithLine();
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 18,
+      height: 18,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const Icon(Icons.edit, size: 14, color: AppColors.textPrimary),
+          const SizedBox(height: 2),
+          Container(width: 12, height: 2, color: AppColors.textPrimary.withValues(alpha: .9)),
+        ],
       ),
     );
   }

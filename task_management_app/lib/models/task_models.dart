@@ -34,7 +34,7 @@ List<TaskItem> demoTasks() => [
   TaskItem(
     id: '1',
     title: '3D Character Cute Robot',
-    description: 'Create a 3d robot character using blender, the style used is simple and cute and uses sotf colors.',
+    description: '',
       createdBy: 'Smith',
       createdByAvatar: 'assets/avatars/smith.jpeg',
     dueDate: DateTime(2023, 10, 16),
@@ -55,7 +55,7 @@ List<TaskItem> demoTasks() => [
   TaskItem(
     id: '2',
     title: 'Illustration for Caraso Company',
-    description: 'There are 2 unfinished tasks',
+    description: '',
       createdBy: 'Jane',
       createdByAvatar: 'assets/avatars/jane.png',
     dueDate: DateTime(2023, 10, 20),
@@ -66,9 +66,8 @@ List<TaskItem> demoTasks() => [
         'assets/avatars/team_member3.png',
       ],
     priority: 'basic',
-    // Adjusted so there are actually 2 unfinished subtasks to match description
     subTasks: const [
-      SubTask(title: 'Research', isCompleted: false),
+      SubTask(title: 'Research', isCompleted: true),
       SubTask(title: 'Design', isCompleted: false),
     ],
   ),

@@ -21,7 +21,7 @@ class HomePage extends StatelessWidget {
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 _profileAvatar(),
                 const Spacer(),
-                _circleButton(icon: Icons.add, bg: AppColors.tagImportant),
+                _softCircleButton(icon: Icons.add),
                 const SizedBox(width: 14),
                 _notificationButton(count: 8),
               ]),
@@ -31,9 +31,9 @@ class HomePage extends StatelessWidget {
               Text('You have 6 tasks to complete', style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary)),
               const SizedBox(height: Spacing.sectionGapMd + 12),
               Row(children: [
-                Expanded(child: StatCard(title: 'Task Today', value: '8', subtitle: 'Tasks', iconColor: AppColors.purpleStart)),
+                Expanded(child: StatCard(title: 'Task Today', value: '8', subtitle: 'Tasks', iconColor: AppColors.purpleStart, icon: Icons.assignment_outlined)),
                 const SizedBox(width: 18),
-                Expanded(child: StatCard(title: 'In Progress', value: '4', subtitle: 'Tasks', iconColor: AppColors.blueStart)),
+                Expanded(child: StatCard(title: 'In Progress', value: '4', subtitle: 'Tasks', iconColor: AppColors.blueStart, assetIconPath: 'assets/images/in_progress.png')),
               ]),
               const SizedBox(height: Spacing.sectionGapMd),
               Text('Your Task', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -69,14 +69,20 @@ class HomePage extends StatelessWidget {
     ]);
   }
 
-  Widget _circleButton({required IconData icon, required Color bg}) {
+  Widget _softCircleButton({required IconData icon}) {
+    const bg = AppColors.white;
     return Container(
       width: 52,
       height: 52,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle, boxShadow: [
-        BoxShadow(color: bg.withValues(alpha: .4), blurRadius: 16, offset: const Offset(0, 8)),
-      ]),
-      child: Icon(icon, color: Colors.white, size: 26),
+      decoration: BoxDecoration(
+        color: bg,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: .05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: Icon(icon, color: AppColors.textPrimary, size: 26),
     );
   }
 
@@ -96,23 +102,26 @@ class HomePage extends StatelessWidget {
             ],
             border: Border.all(color: Colors.white, width: 2),
           ),
-          child: Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 26),
+          child: Icon(Icons.notifications_none_rounded, color: AppColors.textSecondary, size: 26),
         ),
         Positioned(
           top: -2,
           right: -2,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            width: 22,
+            height: 22,
             decoration: BoxDecoration(
               color: AppColors.tagImportant,
-              borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: AppColors.tagImportant.withValues(alpha: .5), blurRadius: 10, offset: const Offset(0, 4)),
+                BoxShadow(color: AppColors.tagImportant.withValues(alpha: .45), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
-            child: Text(
-              '$count',
-              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+            child: Center(
+              child: Text(
+                '$count',
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
             ),
           ),
         )
@@ -144,4 +153,5 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+
 }

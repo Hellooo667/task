@@ -5,6 +5,7 @@ import '../models/task_models.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../theme/design_tokens.dart';
+import 'dart:math' as math;
 
 Color _priorityColor(String p) {
   switch (p) {
@@ -42,7 +43,9 @@ class StatCard extends StatelessWidget {
   final String value;
   final String subtitle;
   final Color iconColor;
-  const StatCard({super.key, required this.title, required this.value, required this.subtitle, required this.iconColor});
+  final IconData? icon;
+  final String? assetIconPath; // optional asset icon
+  const StatCard({super.key, required this.title, required this.value, required this.subtitle, required this.iconColor, this.icon, this.assetIconPath});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -55,12 +58,25 @@ class StatCard extends StatelessWidget {
         ],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(color: iconColor.withValues(alpha: .18), borderRadius: BorderRadius.circular(10)),
-          child: Icon(Icons.task_alt, size: 20, color: iconColor),
-        ),
+        Builder(builder: (context) {
+          final useAsset = assetIconPath != null && assetIconPath!.isNotEmpty;
+          final double iconBox = useAsset ? 40 : 36; // slightly larger for asset image
+          return Container(
+            width: iconBox,
+            height: iconBox,
+            decoration: useAsset
+                ? const BoxDecoration(
+                    // No tint/background when using provided asset; show it exactly
+                    color: Colors.transparent,
+                    shape: BoxShape.circle,
+                  )
+                : BoxDecoration(
+                    color: iconColor.withValues(alpha: .18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+            child: _buildIcon(),
+          );
+        }),
         const SizedBox(height: 14),
         Text(title, style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: 4),
@@ -71,6 +87,17 @@ class StatCard extends StatelessWidget {
         ])
       ]),
     );
+  }
+
+  Widget _buildIcon() {
+    if (assetIconPath != null && assetIconPath!.isNotEmpty) {
+      return Image.asset(
+        assetIconPath!,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Icon(icon ?? Icons.hourglass_empty_rounded, size: 20, color: iconColor),
+      );
+    }
+    return Icon(icon ?? Icons.hourglass_empty_rounded, size: 20, color: iconColor);
   }
 }
 
@@ -144,21 +171,39 @@ class TaskCard extends StatelessWidget {
   const TaskCard({super.key, required this.task, required this.onTap});
   @override
   Widget build(BuildContext context) {
-    final gradient = task.priority == 'basic'
-        ? const [AppColors.blueStart, AppColors.blueEnd]
-        : const [Color(0xFF9C88FF), Color(0xFFB794F6)];
+    final isBasic = task.priority == 'basic';
+    // Background treatment
+    const blueCardColor = Color(0xFFBBE6FF); // exact required color for blue card
+    const purpleGradient = [AppColors.purpleStart, AppColors.purpleEnd];
+    final shadowColor = isBasic
+        ? const Color(0xFF5C9DE7).withValues(alpha: .35)
+        : purpleGradient.first.withValues(alpha: .35);
+    // Date chip background colors (exact hexes per design)
+    final Color chipBgColor = isBasic
+        ? const Color(0xFF5C9DE7)
+        : const Color(0xFFC090F5);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight, stops: const [0.0, 1.0]),
+          color: isBasic ? blueCardColor : null,
+          gradient: isBasic
+              ? null
+              : const LinearGradient(colors: purpleGradient, begin: Alignment.topLeft, end: Alignment.bottomRight, stops: [0.0, 1.0]),
           borderRadius: BorderRadius.circular(Radii.cardLarge),
           boxShadow: [
-            BoxShadow(color: gradient.first.withValues(alpha: .35), blurRadius: 18, offset: const Offset(0, 10)),
+            BoxShadow(color: shadowColor, blurRadius: 18, offset: const Offset(0, 10)),
           ],
         ),
         child: Stack(children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: isBasic ? _BlueBlobsPainter() : _PurpleScribblePainter(),
+              ),
+            ),
+          ),
           // Content column
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Title with space for progress circle on right via padding
@@ -184,7 +229,7 @@ class TaskCard extends StatelessWidget {
                 Row(children: [
                   TagChip(label: task.priority == 'basic' ? 'Basic' : 'Important', priority: task.priority),
                   const SizedBox(width: 10),
-                  _DateChip(date: task.dueDate),
+                  _DateChip(date: task.dueDate, bgColor: chipBgColor),
                 ]),
                 const SizedBox(height: 12),
                 // AvatarGroup moved to bottom-right via Positioned; leave space here for vertical rhythm
@@ -195,14 +240,10 @@ class TaskCard extends StatelessWidget {
           Positioned(
             top: 4,
             right: 0,
-            child: CircularPercentIndicator(
-              radius: 24,
-              lineWidth: 4,
+            child: _CardProgress(
               percent: task.progress,
-              reverse: true,
-              center: Text('${(task.progress * 100).round()}%', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
-              progressColor: Colors.white,
-              backgroundColor: Colors.white.withValues(alpha: .25),
+              color: isBasic ? AppColors.blueStart : AppColors.purpleStart,
+              bg: Colors.white.withValues(alpha: .35),
             ),
           ),
           // Avatars positioned bottom-right
@@ -217,17 +258,88 @@ class TaskCard extends StatelessWidget {
   }
 }
 
+class _CardProgress extends StatelessWidget {
+  final double percent;
+  final Color color;
+  final Color bg;
+  const _CardProgress({required this.percent, required this.color, required this.bg});
+  @override
+  Widget build(BuildContext context) {
+    return CircularPercentIndicator(
+      radius: 24,
+      lineWidth: 4,
+      percent: percent,
+      reverse: true,
+      center: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: .12), blurRadius: 6, offset: const Offset(0, 2)),
+        ]),
+        child: Center(child: Text('${(percent * 100).round()}%', style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+      ),
+      progressColor: color,
+      backgroundColor: bg,
+    );
+  }
+}
+
+// Painters for decorative backgrounds
+class _PurpleScribblePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    // Draw a few curved scribbles on top-right area
+    final path1 = Path()
+      ..moveTo(size.width * 0.78, size.height * 0.18)
+      ..cubicTo(size.width * 0.86, size.height * 0.10, size.width * 0.94, size.height * 0.22, size.width * 0.88, size.height * 0.28);
+    canvas.drawPath(path1, paint);
+    final path2 = Path()
+      ..moveTo(size.width * 0.80, size.height * 0.30)
+      ..cubicTo(size.width * 0.88, size.height * 0.22, size.width * 0.96, size.height * 0.34, size.width * 0.90, size.height * 0.40);
+    canvas.drawPath(path2, paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _BlueBlobsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+  final blobColor = Colors.white.withValues(alpha: 0.35);
+    final paint = Paint()..color = blobColor;
+    void blob(Offset c, double rx, double ry, double rotationDeg) {
+      canvas.save();
+      canvas.translate(c.dx, c.dy);
+      canvas.rotate(rotationDeg * math.pi / 180);
+      final rect = Rect.fromCenter(center: Offset.zero, width: rx * 2, height: ry * 2);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(ry)), paint);
+      canvas.restore();
+    }
+    blob(Offset(size.width * .18, size.height * .18), 18, 10, -12);
+    blob(Offset(size.width * .30, size.height * .12), 12, 8, 18);
+    blob(Offset(size.width * .44, size.height * .16), 14, 9, -8);
+    blob(Offset(size.width * .60, size.height * .10), 10, 7, 10);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class _DateChip extends StatelessWidget {
   final DateTime date;
-  const _DateChip({required this.date});
+  final Color bgColor;
+  const _DateChip({required this.date, required this.bgColor});
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .25),
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: .35), width: 1),
       ),
       child: Text(DateFormat('d MMM yyyy').format(date),
           style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white)),

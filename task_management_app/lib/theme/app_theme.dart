@@ -47,8 +47,6 @@ ThemeData buildAppTheme() {
     onSecondary: Colors.white,
     surface: AppColors.white,
     onSurface: AppColors.textPrimary,
-    background: AppColors.background,
-    onBackground: AppColors.textPrimary,
     error: const Color(0xFFFF4D4D),
   );
   return base.copyWith(
@@ -65,7 +63,7 @@ ThemeData buildAppTheme() {
     ),
     cardColor: AppColors.white,
     canvasColor: AppColors.background,
-    dialogBackgroundColor: AppColors.white,
+  dialogTheme: const DialogThemeData(backgroundColor: AppColors.white),
     splashColor: AppColors.purpleStart.withValues(alpha: .08),
     highlightColor: AppColors.purpleStart.withValues(alpha: .05),
   );
